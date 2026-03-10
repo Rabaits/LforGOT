@@ -1,6 +1,31 @@
 import flet as ft
 import ctypes
 
+import asyncio
+from bleak import BleakScanner
+
+DEVICE_ADDRESS = "Meshtastic_7bb8"  
+
+async def check_bluetooth():
+    try:
+        devices = await BleakScanner.discover(timeout=2)
+        if devices is not None:
+            print("(+) Bluetooth включен")
+            return True, None
+    except Exception as e:
+        error = "(Х) Bluetooth выключен"
+        print(error)
+        return False, error
+
+async def connectionDEVICE():
+    returns, text = await check_bluetooth()
+    if not(returns):
+        print(text)
+        return False, text
+    
+    print("Успешное подключение!")
+    return True, "Успешное подключение!"
+
 def main(page: ft.Page):
     page.title = "XAB-LFGOT"
     page.window.resizable = False
@@ -25,6 +50,8 @@ def main(page: ft.Page):
     but_conekt = ft.TextButton(
         content="Подключиться к Mesh-сети",
         icon_color=ft.Colors.BLUE_300,
+        on_click=connectionDEVICE,
+        data="connect_DEVICE",
     )
 
     calculator_container = ft.Container(
