@@ -17,14 +17,27 @@ async def check_bluetooth():
         print(error)
         return False, error
 
-async def connectionDEVICE():
-    returns, text = await check_bluetooth()
-    if not(returns):
-        print(text)
-        return False, text
+async def connectionDEVICE(page: ft.Page, status_text: ft.Text):
     
+    
+    status_text.value = "Проверка Bluetooth..."
+    page.update()
+    
+    returns, message  = await check_bluetooth()
+    if not(returns):
+        status_text.value = message
+        page.update()
+        print(message)
+
+        return
+    
+    status_text.value = "Успешное подключение!"
+    page.update()
     print("Успешное подключение!")
-    return True, "Успешное подключение!"
+    return
+
+
+
 
 def main(page: ft.Page):
     page.title = "XAB-LFGOT"
@@ -45,17 +58,20 @@ def main(page: ft.Page):
     page.window.left = (screen_width - 1200) // 2
     page.window.top = (screen_height - 800) // 2
     
-    text = ft.Text("Опвищение", size=14, weight=ft.FontWeight.W_600)
+    status_text = ft.Text("Ожидание подключения...", size=14, weight=ft.FontWeight.W_600)
     
+    async def on_connect_click(e):
+        await connectionDEVICE(page, status_text)
+
     but_conekt = ft.TextButton(
         content="Подключиться к Mesh-сети",
         icon_color=ft.Colors.BLUE_300,
-        on_click=connectionDEVICE,
+        on_click=on_connect_click,
         data="connect_DEVICE",
     )
 
     calculator_container = ft.Container(
-        content=ft.Column([ text, but_conekt
+        content=ft.Column([ status_text, but_conekt
         ])
     
     )
