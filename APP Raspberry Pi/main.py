@@ -46,6 +46,7 @@ def main(page: ft.Page):
     page.window.height = 800
     page.theme_mode = ft.ThemeMode.DARK
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
+    page.horizontal_alignment = ft.CrossAxisAlignment.CENTER    
     #обновление страницы
     page.update()
     
@@ -71,6 +72,12 @@ def main(page: ft.Page):
     )
 
     calculator_container = ft.Container(
+        alignment=ft.alignment.Alignment.CENTER,
+        width=600, #ширина, длянну не указываем - растянеться
+        bgcolor = ft.Colors.WHITE, #цвет фона
+        border_radius = ft.BorderRadius.all(20), #задание радиуса у контура
+        padding=ft.Padding.all(100),#это общий оступ (сверх, слева, справа, снизу)
+
         content=ft.Column([ status_text, but_conekt
         ])
     
