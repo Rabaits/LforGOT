@@ -59,22 +59,25 @@ def main(page: ft.Page):
     page.window.left = (screen_width - 1200) // 2
     page.window.top = (screen_height - 800) // 2
     
-    status_text = ft.Text("Ожидание подключения...", size=14, weight=ft.FontWeight.W_600)
+    status_text = ft.Text(
+        "Ожидание подключения...", 
+        size=14, 
+        weight=ft.FontWeight.W_600)
     
     async def on_connect_click(e):
         await connectionDEVICE(page, status_text)
-
+ 
     but_conekt = ft.TextButton(
-        content="Подключиться к Mesh-сети",
-        icon_color=ft.Colors.BLUE_300,
+        content="//// Подключиться к Mesh-сети ////",
         on_click=on_connect_click,
+        style=ft.ButtonStyle(color="#11D53F", bgcolor="#dff9fb"),
         data="connect_DEVICE",
     )
 
     calculator_container = ft.Container(
         alignment=ft.alignment.Alignment.CENTER,
         width=600, #ширина, длянну не указываем - растянеться
-        bgcolor = ft.Colors.WHITE, #цвет фона
+        bgcolor ='#833471', #цвет фона
         border_radius = ft.BorderRadius.all(20), #задание радиуса у контура
         padding=ft.Padding.all(100),#это общий оступ (сверх, слева, справа, снизу)
 
