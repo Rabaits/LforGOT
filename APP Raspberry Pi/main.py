@@ -4,41 +4,108 @@ import ctypes
 import asyncio
 from bleak import BleakScanner
 
+import meshtastic.ble_interface  #интерфейс для блютуз
+from pubsub import pub 
+import time
+import threading
 DEVICE_ADDRESS = "Meshtastic_7bb8"  
 
-async def check_bluetooth():
+
+def check_request(packet):  #логика обработки сообщений из mesh сети
+    try:
+        message = packet.get('decoded', {}).get('text', '')
+        sender = packet.get('fromId', 'неизвестно')
+        if message != None:
+            print(f"\nMesh сеть: {sender}: {message}")
+
+    except Exception as e:
+        print(f"(!!!) {e}")
+
+def connect_meshtastic(device_address): #подключение к mesh сети
+    try:
+        interface = meshtastic.ble_interface.BLEInterface(address=device_address)
+        print("Подключено к Meshtastic")
+        return interface
+    except Exception as e:
+        print(f"(!!!!) Ошибка подключения: {e}")
+        return None
+
+def run_meshtastic(device_address, message_handler, status_callback=None): #запуск mesh сети
+    interface = connect_meshtastic(device_address)
+    
+    if not interface:
+        if status_callback:
+            status_callback("Ошибка подключения к Meshtastic")
+        return
+    
+    if status_callback:
+        status_callback("Подключено к Meshtastic!")
+    
+    try:
+        status_callback("Ожидание сообщений")
+        print("// Ожидание сообщений //")
+        pub.subscribe(message_handler, "meshtastic.receive")
+        
+        while True:
+            time.sleep(1)
+            
+    except KeyboardInterrupt:
+        print("\n// Остановка //")
+    finally:
+        interface.close()
+        print("// Соединение закрыто //")
+
+async def check_bluetooth(): #проверка блютуз
     try:
         devices = await BleakScanner.discover(timeout=2)
         if devices is not None:
-            print("(+) Bluetooth включен")
+            print("Bluetooth включен")
             return True, None
+    
     except Exception as e:
-        error = "(Х) Bluetooth выключен"
-        print(error)
+        error = "Bluetooth выключен"
+        print("(!!!) Bluetooth выключен")
         return False, error
 
-async def connectionDEVICE(page: ft.Page, status_text: ft.Text):
-    
+#основная логика 
+async def connectionDEVICE(page: ft.Page, status_text: ft.Text): 
     
     status_text.value = "Проверка Bluetooth..."
     page.update()
     
-    returns, message  = await check_bluetooth()
-    if not(returns):
+    returns, message = await check_bluetooth()
+    if not returns:
         status_text.value = message
         page.update()
         print(message)
-
         return
     
-    status_text.value = "Успешное подключение!"
+    status_text.value = f"Проверка подключения к {DEVICE_ADDRESS}..."
     page.update()
-    print("Успешное подключение!")
-    return
 
+    await asyncio.sleep(1)
+    
+    # Запускаем в отдельном потоке
+    thread = threading.Thread(
+        target=run_meshtastic,
+        args=(DEVICE_ADDRESS, check_request),
+        daemon=True
+    )
+    thread.start()
+    
+    # Даем время на подключение
+    await asyncio.sleep(3)
+    
+    # Финальное обновление статуса
+    if thread.is_alive():
+        status_text.value = "Подключение активно"
+    else:
+        status_text.value = "Ошибка подключения"
+    
+    page.update()
+    print("Процесс подключения завершен")
 
-
-
+ 
 def main(page: ft.Page):
     page.title = "XAB-LFGOT"
     page.window.resizable = False
