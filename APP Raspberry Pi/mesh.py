@@ -72,7 +72,7 @@ def connect_mesh():
     address = check_bluetooth(DEVICE_NAME)
 
     if not address:
-        print(('error', f"'{DEVICE_NAME}' не найдено"))
+        data_queue.put(('error', f"'{DEVICE_NAME}' не найдено"))
         data_queue.put(None)
         return
 
@@ -84,44 +84,3 @@ def connect_mesh():
     data_queue.put(None)
  
 
-def main():
-    t2 = threading.Thread(target=connect_mesh, name="MeshtasticThread")
-    t2.start()
-
-    print("Основной поток запущен. Для выхода нажмите Ctrl+C")
-    try:
-        while not stop_event.is_set():
-            try:
-                data = data_queue.get(timeout=0.5)
-            except queue.Empty:
-                continue
-
-            if data is None:
-                print("Получен сигнал завершения.")
-                break
-
-            if isinstance(data, tuple):
-                msg_type = data[0]
-                if msg_type == 'message':
-                    _, sender, text = data
-                    print(f"[Mesh] {sender}: {text}")
-                elif msg_type == 'status':
-                    _, text = data
-                    print(f"[Статус] {text}")
-                elif msg_type == 'error':
-                    _, text = data
-                    print(f"[Ошибка] {text}")
-                else:
-                    print(f"[Неизвестно] {data}")
-            else:
-                print(f"[Данные] {data}")
-    except KeyboardInterrupt:
-        print("\nПрерывание с клавиатуры. Останавливаем...")
-        stop_event.set()
-    finally:
-        stop_event.set()  # гарантируем сигнал
-        t2.join()
-        print("Основной поток завершён.")
-
-if __name__ == "__main__":
-    main()
