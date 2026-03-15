@@ -20,13 +20,7 @@ def main(page: ft.Page):
     page.update()
     
     # получаем размеры экрана
-    user32 = ctypes.windll.user32
-    screen_width = user32.GetSystemMetrics(0)
-    screen_height = user32.GetSystemMetrics(1)
-    
-    # центрируем окно
-    page.window.left = (screen_width - 1200) // 2
-    page.window.top = (screen_height - 800) // 2
+    page.window.center()
     
 
 
