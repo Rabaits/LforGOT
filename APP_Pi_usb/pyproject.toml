@@ -1,0 +1,21 @@
+[project]
+name = "xab-lfgot"
+version = "1.0.0"
+description = "meshtastic test"
+authors = [{name="Rabait"}]
+dependencies = [
+    "flet",
+    "bleak",
+    "meshtastic",
+    "pypubsub"
+]
+
+[tool.flet]
+org = "com.example"
+product = "xab-lfgot"
+
+[tool.flet.app]
+path = "."
+
+[tool.flet.build]
+arch = "arm64"
