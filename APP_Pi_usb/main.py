@@ -1,9 +1,5 @@
-
 import flet as ft
-
 import threading
-import queue
-import time
 
 from mesh import connect_mesh, data_queue
 
@@ -17,7 +13,6 @@ def main(page: ft.Page):
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER    
     
     page.update()
-    page.window.center()
     
     # блок с тектом
     status_text = ft.Text(

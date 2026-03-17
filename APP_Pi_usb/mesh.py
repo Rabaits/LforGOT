@@ -7,26 +7,30 @@ import meshtastic.serial_interface
 import threading
 import queue
 
-import platform
-
 DEVICE_NAME = "Meshtastic_7bb8"   
 
 data_queue = queue.Queue()
 stop_event = threading.Event()
 
+
+def check_request(packet):
+    try:
+        message = packet.get('decoded', {}).get('text', '')
+        sender = packet.get('fromId', 'неизвестно')
+        if message:
+            data_queue.put(('mes', sender, message))
+    except Exception as e:
+        data_queue.put(("error", f"Ошибка обработки: {e}"))
+
 def find_usb_device():
-    """Поиск Meshtastic устройства через USB"""
     try:
         ports = list(serial.tools.list_ports.comports())
         
         for port in ports:
-            # Ищем по описанию или VID/PID Meshtastic
             if "Meshtastic" in port.description or "CP210" in port.description:
                 data_queue.put(("status", f"Найдено USB устройство: {port.device}"))
                 return port.device
-            
-            # Также можно искать по VID/PID для Meshtastic устройств
-            # Обычно Meshtastic использует чипы CP210x (VID 0x10C4, PID 0xEA60)
+
             if "10C4:EA60" in port.hwid:
                 data_queue.put(("status", f"Найдено USB устройство (CP210x): {port.device}"))
                 return port.device
@@ -37,14 +41,6 @@ def find_usb_device():
         data_queue.put(("error", f"Ошибка при поиске USB устройств: {e}"))
         return None
 
-def check_request(packet):
-    try:
-        message = packet.get('decoded', {}).get('text', '')
-        sender = packet.get('fromId', 'неизвестно')
-        if message:
-            data_queue.put(('mes', sender, message))
-    except Exception as e:
-        data_queue.put(("error", f"Ошибка обработки: {e}"))
 
 def connect_meshtastic(port):
     try:

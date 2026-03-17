@@ -5,7 +5,6 @@ description = "meshtastic test"
 authors = [{name="Rabait"}]
 dependencies = [
     "flet",
-    "bleak",
     "meshtastic",
     "pypubsub"
 ]
